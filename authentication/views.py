@@ -2,7 +2,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import RedirectView, TemplateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.db.models import Avg, Sum, F
@@ -48,9 +48,9 @@ class CustomLogoutView(RedirectView):
             user_name = request.user.get_full_name() or request.user.email
             logout(request)
             messages.success(request, f'You have been successfully signed out. See you later, {user_name}!')
-        
-        return super().get(request, *args, **kwargs)
-    
+        # Always redirect to login page after logout
+        return redirect(reverse('authentication:signin'))
+
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
 
@@ -212,6 +212,9 @@ class StudentProfileView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             is_completed=True
         ).select_related('exam').order_by('-submitted_at')
         
+        # Count total exams taken
+        total_exams_taken = all_submissions.count()
+
         # Calculate average score
         if total_exams_taken > 0:
             avg_score = all_submissions.aggregate(

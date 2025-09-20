@@ -273,21 +273,21 @@ class ExamSubmission(models.Model):
             self.percentage = 0.00
         return self.percentage
     
+    @property
     def get_time_remaining(self):
         """Get remaining time in seconds for this submission."""
         if self.is_completed:
             return 0
-        
         now = timezone.now()
         time_elapsed = (now - self.started_at).total_seconds()
         total_time = self.exam.duration_minutes * 60
-        remaining = max(0, total_time - time_elapsed)
-        return int(remaining)
-    
+        remaining = max(0, int(total_time - time_elapsed))
+        return remaining
+
     def is_time_up(self):
         """Check if time is up for this submission."""
-        return self.get_time_remaining() <= 0
-    
+        return self.get_time_remaining <= 0
+
     def is_passed(self):
         """Check if the student passed this exam based on the passing percentage."""
         if not self.is_completed:
